@@ -55,74 +55,61 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </p>
         </div>
 
-        {/* Step 1: Check Google Authorization */}
-        {!hasGoogleAuth ? (
-          <div className="p-5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center space-y-4 mb-6">
-            <div className="flex items-center justify-center gap-2 text-amber-300 font-semibold text-sm">
-              <ShieldCheck className="w-5 h-5 text-amber-400" />
-              <span>Otorisasi Akses Diperlukan</span>
+        {/* NISN Input Form */}
+        <form onSubmit={handleLoginSubmit} className="space-y-5">
+          {error && (
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{error}</span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Silakan terhubung dengan akun Google untuk membaca dan menyimpan data ke Google Sheets dan Drive.
-            </p>
-            <button
-              onClick={onGoogleSignIn}
-              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2"
-            >
-              <span>Hubungkan Akun Google</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
-          /* Step 2: NISN Input Form */
-          <form onSubmit={handleLoginSubmit} className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">
-                Nomor Induk Siswa Nasional (NISN)
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <KeyRound className="w-5 h-5" />
-                </div>
-                <input
-                  type="text"
-                  value={inputNisn}
-                  onChange={(e) => {
-                    setInputNisn(e.target.value);
-                    setNisnError('');
-                  }}
-                  placeholder="Contoh: 0051234567"
-                  className="w-full pl-11 pr-4 py-3 bg-slate-800/80 border border-slate-700/80 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 rounded-xl text-white placeholder-slate-500 font-mono text-sm transition-all"
-                  autoFocus
-                />
-              </div>
-              {nisnError && (
-                <div className="flex items-center gap-1.5 text-xs text-rose-400 mt-2 font-medium">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{nisnError}</span>
-                </div>
-              )}
-            </div>
+          )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-600/25 ring-1 ring-indigo-400/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Memeriksa Data...</span>
-                </>
-              ) : (
-                <>
-                  <span>Masuk Ke Portal</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">
+              Nomor Induk Siswa Nasional (NISN)
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <KeyRound className="w-5 h-5" />
+              </div>
+              <input
+                type="text"
+                value={inputNisn}
+                onChange={(e) => {
+                  setInputNisn(e.target.value);
+                  setNisnError('');
+                }}
+                placeholder="Contoh: 0051234567"
+                className="w-full pl-11 pr-4 py-3 bg-slate-800/80 border border-slate-700/80 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 rounded-xl text-white placeholder-slate-500 font-mono text-sm transition-all"
+                autoFocus
+              />
+            </div>
+            {nisnError && (
+              <div className="flex items-center gap-1.5 text-xs text-rose-400 mt-2 font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{nisnError}</span>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-600/25 ring-1 ring-indigo-400/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Memeriksa Data...</span>
+              </>
+            ) : (
+              <>
+                <span>Masuk Ke Portal</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );
