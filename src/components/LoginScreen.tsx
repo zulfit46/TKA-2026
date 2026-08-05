@@ -34,12 +34,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    if (loading) {
-      return;
-    }
-
     if (!students || students.length === 0) {
-      setNisnError('Data siswa sedang dimuat, silakan tunggu beberapa detik dan coba lagi.');
+      setNisnError('Data siswa sedang disinkronkan, silakan coba beberapa saat lagi.');
       return;
     }
 
@@ -118,20 +114,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-600/25 ring-1 ring-indigo-400/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-600/25 ring-1 ring-indigo-400/30 transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
           >
-            {loading ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Memeriksa Data...</span>
-              </>
-            ) : (
-              <>
-                <span>Masuk Ke Portal</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
+            <span>Masuk Ke Portal</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </form>
       </div>
