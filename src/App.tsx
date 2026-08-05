@@ -205,7 +205,7 @@ export default function App() {
         await logoutGoogle();
         setGoogleToken(null);
         setHasGoogleAuth(false);
-        setError('Sesi Google OAuth telah kedaluwarsa. Menampilkan data siswa lokal. Silakan hubungkan Google kembali untuk menyinkronkan data.');
+        setError('Gagal memuat data dari Spreadsheet server. Menampilkan data lokal.');
       } else {
         setError(err.message || 'Gagal memuat data dari Spreadsheet. Menampilkan data lokal.');
       }
