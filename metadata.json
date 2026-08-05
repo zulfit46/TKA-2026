@@ -1,0 +1,6 @@
+{
+  "name": "Pendataan TKA 2026",
+  "description": "Aplikasi pengumpulan dan verifikasi data siswa peserta TKA 2026 terintegrasi Google Sheets dan Drive",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
