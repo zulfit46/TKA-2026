@@ -34,7 +34,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    onLoginWithNisn(trimmed);
+    const found = students.find((s) => {
+      const sNisn = String(s.nisn).trim();
+      if (sNisn === trimmed) return true;
+      const sNum = parseInt(sNisn, 10);
+      const inputNum = parseInt(trimmed, 10);
+      return !isNaN(sNum) && !isNaN(inputNum) && sNum > 0 && sNum === inputNum;
+    });
+
+    if (!found) {
+      setNisnError(`NISN "${trimmed}" tidak terdaftar dalam database siswa. Silakan periksa kembali NISN Anda.`);
+      return;
+    }
+
+    onLoginWithNisn(String(found.nisn).trim());
   };
 
   return (
