@@ -96,9 +96,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </div>
               <input
                 type="text"
+                maxLength={10}
                 value={inputNisn}
                 onChange={(e) => {
-                  setInputNisn(e.target.value);
+                  const val = e.target.value.slice(0, 10);
+                  setInputNisn(val);
                   setNisnError('');
                 }}
                 placeholder="Contoh: 0051234567"
