@@ -231,33 +231,20 @@ export default function App() {
 
   const handleLoginWithNisn = (nisn: string) => {
     const trimmed = nisn.trim();
-    setCurrentNisn(trimmed);
-    localStorage.setItem('logged_in_nisn', trimmed);
-    setActiveTab('data-siswa');
-
-    // If student with this NISN isn't in students array yet, create a default entry for them
-    setStudents((prev) => {
-      const exists = prev.some((s) => s.nisn.trim() === trimmed);
-      if (exists) return prev;
-      const newStudent: Student = {
-        rowIndex: prev.length + 2,
-        no: String(prev.length + 1),
-        nipd: '-',
-        nisn: trimmed,
-        nama: 'Siswa (NISN: ' + trimmed + ')',
-        prog_keahlian: '-',
-        jk: 'L',
-        t_lahir: '',
-        tgl_lahir: '',
-        nama_ortu: '',
-        keikutsertaan: 'Tidak',
-        mapel_1: '',
-        mapel_2: '',
-        link_foto: '',
-        status_verval: '',
-      };
-      return [...prev, newStudent];
+    const found = students.find((s) => {
+      const sNisn = String(s.nisn).trim();
+      if (sNisn === trimmed) return true;
+      const sNum = parseInt(sNisn, 10);
+      const inputNum = parseInt(trimmed, 10);
+      return !isNaN(sNum) && !isNaN(inputNum) && sNum > 0 && sNum === inputNum;
     });
+
+    if (found) {
+      const realNisn = String(found.nisn).trim();
+      setCurrentNisn(realNisn);
+      localStorage.setItem('logged_in_nisn', realNisn);
+      setActiveTab('data-siswa');
+    }
   };
 
   const handleLogout = () => {
