@@ -1,19 +1,40 @@
 import { Student, StudentUpdateRequest } from '../types';
 
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6psd_n0hQfKTAaM3sJEeRqckGOX9WMDCps07QETKMnSWYlOQsaw0AGNe_CISM1Kh9/exec';
+
 export async function fetchStudents(token?: string | null): Promise<Student[]> {
   const headers: Record<string, string> = {};
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch('/api/students', { headers });
-
-  if (!response.ok) {
-    const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error || `Gagal mengambil data siswa (Status ${response.status})`);
+  try {
+    const response = await fetch('/api/students', { headers });
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch (netErr) {
+    console.warn('Backend /api/students fetch failed, attempting direct Apps Script fetch:', netErr);
   }
 
-  return await response.json();
+  // Fallback directly to Google Apps Script Web App
+  try {
+    const gasRes = await fetch(`${APPS_SCRIPT_URL}?action=getStudents`);
+    if (gasRes.ok) {
+      const data = await gasRes.json();
+      if (Array.isArray(data)) {
+        return data.map((item: any) => ({
+          ...item,
+          t_lahir: item.t_lahir || item.tempat_lahir || item.tempatLahir || '',
+        }));
+      }
+    }
+  } catch (gasErr) {
+    console.error('Apps Script direct fetch failed:', gasErr);
+  }
+
+  throw new Error('Gagal mengambil data siswa. Silakan periksa koneksi internet Anda.');
 }
 
 export async function updateStudentData(
@@ -28,18 +49,39 @@ export async function updateStudentData(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`/api/students/${nisn}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify(data),
-  });
+  try {
+    const response = await fetch(`/api/students/${nisn}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error || `Gagal memperbarui data siswa (Status ${response.status})`);
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.warn('Backend update failed, attempting direct Apps Script update:', err);
   }
 
-  return await response.json();
+  // Fallback directly to Google Apps Script Web App
+  try {
+    const gasRes = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'updateStudent',
+        nisn,
+        ...data,
+      }),
+    });
+    if (gasRes.ok) {
+      return await gasRes.json();
+    }
+  } catch (gasErr) {
+    console.error('Apps Script update error:', gasErr);
+  }
+
+  throw new Error('Gagal memperbarui data siswa.');
 }
 
 export async function uploadPhotoToDrive(
@@ -47,6 +89,10 @@ export async function uploadPhotoToDrive(
   nisn: string,
   file: File
 ): Promise<{ success: boolean; link_foto: string; message: string }> {
+  if (file.size > 1 * 1024 * 1024) {
+    throw new Error('Ukuran file foto melebihi 1 MB. Foto tidak dapat disimpan.');
+  }
+
   const formData = new FormData();
   formData.append('nisn', nisn);
   formData.append('photo', file);
@@ -56,28 +102,53 @@ export async function uploadPhotoToDrive(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  let response: Response;
   try {
-    response = await fetch('/api/upload-photo', {
+    const response = await fetch('/api/upload-photo', {
       method: 'POST',
       headers,
       body: formData,
     });
-  } catch (netErr: any) {
-    throw new Error(`Gagal terhubung ke server: ${netErr.message || 'Failed to fetch'}`);
+    const contentType = response.headers.get('content-type') || '';
+    if (response.ok && contentType.includes('application/json')) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.warn('Backend upload failed, fallback to Base64 via Apps Script:', err);
   }
 
-  const contentType = response.headers.get('content-type') || '';
-  if (!contentType.includes('application/json')) {
-    throw new Error(`Respon server tidak valid (${response.status}). Silakan coba lagi.`);
-  }
+  // Base64 upload fallback to Apps Script
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64Data = reader.result as string;
+        const ext = file.type.includes('png') ? '.png' : '.jpg';
+        const fileName = `FOTO_${nisn}${ext}`;
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || `Gagal mengunggah foto (Status ${response.status})`);
-  }
-
-  return data;
+        const gasRes = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'uploadPhoto',
+            nisn,
+            base64Data,
+            fileName,
+            mimeType: file.type || 'image/jpeg',
+          }),
+        });
+        if (gasRes.ok) {
+          const resJson = await gasRes.json();
+          resolve(resJson);
+        } else {
+          reject(new Error(`Gagal mengunggah foto ke Apps Script (Status ${gasRes.status})`));
+        }
+      } catch (err: any) {
+        reject(new Error(err?.message || 'Gagal mengunggah foto'));
+      }
+    };
+    reader.onerror = () => reject(new Error('Gagal membaca file foto'));
+    reader.readAsDataURL(file);
+  });
 }
 
 export async function fetchSubjects(token?: string | null): Promise<{ mapel1: string[]; mapel2: string[] }> {
@@ -86,12 +157,24 @@ export async function fetchSubjects(token?: string | null): Promise<{ mapel1: st
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch('/api/subjects', { headers });
-
-  if (!response.ok) {
-    const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error || `Gagal mengambil data mapel (Status ${response.status})`);
+  try {
+    const response = await fetch('/api/subjects', { headers });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.warn('Backend subjects fetch failed, trying Apps Script:', err);
   }
 
-  return await response.json();
+  try {
+    const gasRes = await fetch(`${APPS_SCRIPT_URL}?action=getSubjects`);
+    if (gasRes.ok) {
+      return await gasRes.json();
+    }
+  } catch (gasErr) {
+    console.error('Apps Script subjects error:', gasErr);
+  }
+
+  return { mapel1: [], mapel2: [] };
 }
+
