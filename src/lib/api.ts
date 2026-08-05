@@ -123,7 +123,7 @@ export async function uploadPhotoToDrive(
       try {
         const base64Data = reader.result as string;
         const ext = file.type.includes('png') ? '.png' : '.jpg';
-        const fileName = `FOTO_${nisn}${ext}`;
+        const fileName = `${nisn}${ext}`;
 
         const gasRes = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
