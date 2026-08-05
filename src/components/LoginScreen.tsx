@@ -34,12 +34,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
+    if (loading) {
+      return;
+    }
+
+    if (!students || students.length === 0) {
+      setNisnError('Data siswa sedang dimuat, silakan tunggu beberapa detik dan coba lagi.');
+      return;
+    }
+
     const found = students.find((s) => {
       const sNisn = String(s.nisn).trim();
       if (sNisn === trimmed) return true;
       const sNum = parseInt(sNisn, 10);
       const inputNum = parseInt(trimmed, 10);
-      return !isNaN(sNum) && !isNaN(inputNum) && sNum > 0 && sNum === inputNum;
+      return !isNaN(sNum) && !isNaN(inputNum) && inputNum >= 10000 && sNum === inputNum;
     });
 
     if (!found) {
