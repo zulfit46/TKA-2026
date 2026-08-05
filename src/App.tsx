@@ -130,7 +130,8 @@ export default function App() {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          const valid = parsed.filter((s: Student) => s.nisn && String(s.nisn).trim().length >= 5);
+          if (valid.length > 0) return valid;
         }
       } catch {
         // fallback to DEMO_STUDENTS
@@ -144,9 +145,16 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('cached_students_data', JSON.stringify(students));
   }, [students]);
-  const [currentNisn, setCurrentNisn] = useState<string | null>(
-    localStorage.getItem('logged_in_nisn')
-  );
+
+  const [currentNisn, setCurrentNisn] = useState<string | null>(() => {
+    const saved = localStorage.getItem('logged_in_nisn');
+    if (!saved) return null;
+    if (saved.trim().length < 5) {
+      localStorage.removeItem('logged_in_nisn');
+      return null;
+    }
+    return saved.trim();
+  });
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('data-siswa');
   const [loading, setLoading] = useState<boolean>(false);
@@ -236,7 +244,7 @@ export default function App() {
       if (sNisn === trimmed) return true;
       const sNum = parseInt(sNisn, 10);
       const inputNum = parseInt(trimmed, 10);
-      return !isNaN(sNum) && !isNaN(inputNum) && sNum > 0 && sNum === inputNum;
+      return !isNaN(sNum) && !isNaN(inputNum) && inputNum >= 10000 && sNum === inputNum;
     });
 
     if (found) {
