@@ -40,24 +40,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Section: Auth & Profile */}
         <div className="flex items-center gap-3">
-          {/* Google Connection Badge */}
-          {hasGoogleAuth ? (
-            <div
-              className="hidden md:flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs px-2.5 py-1 rounded-full"
-              title="Terhubung ke Google Sheets & Drive API"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="font-medium"></span>
-            </div>
-          ) : (
-            <button
-              onClick={onGoogleSignIn}
-              className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
-            >
-              <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-              <span>Otorisasi Google</span>
-            </button>
-          )}
+          {/* Connection Badge */}
+          <div
+            className="hidden md:flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs px-2.5 py-1 rounded-full"
+            title="Terhubung ke Sistem Spreadsheet & Drive"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-medium">Online</span>
+          </div>
 
           {/* Student Badge / Sign Out */}
           {currentStudent && (
